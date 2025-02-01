@@ -1,27 +1,16 @@
 import "dotenv/config";
-
+const PORT = process.env.PORT || 5000;
+import express from "express";
 import connectDB from "./db/index.js";
 
-connectDB();
-
-//Connect to MongoDB through mongoose with IIFFEs function
-//IIFEs - Immediately Invoked Function Expressions
-/*
-import express from "express";
 const app = express();
-(async () => {
-    try {
-        await mongoose.connect(`${URI}/${DB_NAME}`);
-        app.on("error", (error) => {
-            console.log("Hi, Faisal mongoose connection error: ", error);
-            throw error;
-        });
+
+connectDB()
+    .then(() => {
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
-    } catch (error) {
-        console.error("ERROR: ", error);
-        throw error;
-    }
-})();
-*/
+    })
+    .catch((error) => {
+        console.log("Error in connecting to DB: ", error);
+    });
