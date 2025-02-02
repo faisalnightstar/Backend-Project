@@ -29,7 +29,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // check if user already exists in the database: username, email
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }],
     });
 
@@ -42,14 +42,14 @@ const registerUser = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.files?.coverImage[0].path;
 
     if (!avatarLocalPath) {
-        throw new ApiError(400, "Avatar is required");
+        throw new ApiError(400, "Avatar is required to upload on LocalPath");
     }
 
     //upload image to cloudinary, get image url
     const avatar = await uploadOnCloudinary(avatarLocalPath);
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
     if (!avatar) {
-        throw new ApiError(400, "Avatar is required");
+        throw new ApiError(400, "Avatar is required to upload on cloudinary");
     }
 
     // create user object - create user in the database
@@ -64,7 +64,7 @@ const registerUser = asyncHandler(async (req, res) => {
     });
 
     // remove password and refresh token field from response
-    const createdUser = User.findById(user._id).select(
+    const createdUser = await User.findById(user._id).select(
         "-password -refreshToken" // select methode me jo jo nhi chahiye response me usko - sign laga kr likh do. jaise user.model me likha waise hi
     );
     // now, checking user created or not
