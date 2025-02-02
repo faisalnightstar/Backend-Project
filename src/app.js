@@ -19,3 +19,11 @@ app.use(
 app.use(express.urlencoded({ extended: true, limit: "500kb" })); //when fetching data from url
 app.use(express.static("public"));
 app.use(cookieParser());
+
+// routes import
+import userRouter from "./routes/user.routes.js";
+
+// routes declaration
+app.use("/api/v1/users", userRouter);
+
+export { app };

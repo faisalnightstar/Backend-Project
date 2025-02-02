@@ -5,8 +5,6 @@
 
 //It is higher order function that takes a function as an argument and returns a new function that will call the original function and catch any errors that are thrown.
 
-/*
-
 const asyncHandler = (fn) => async (req, res, next) => {
     try {
         await fn(req, res, next);
@@ -18,11 +16,11 @@ const asyncHandler = (fn) => async (req, res, next) => {
     }
 };
 
-*/
-
-const asyncHandler = async (req, res, next) => {
-    (req, res, next) => {
-        Promise.resolve(asyncHandler(req, res, next)).catch((err) => next(err));
-    };
-};
+// const asyncHandler = async (requestHandler) => {
+//     return (req, res, next) => {
+//         Promise.resolve(requestHandler(req, res, next)).catch((err) =>
+//             next(err)
+//         );
+//     };
+// };
 export { asyncHandler };
