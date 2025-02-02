@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import fs from "fs";
 
 const registerUser = asyncHandler(async (req, res) => {
     // get user details from frontend
@@ -17,7 +18,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // return res
 
     const { fullName, email, username, password } = req.body;
-    console.log(fullName, email, username, password);
+    //console.log(fullName, email, username, password);
 
     // validate user details - not empty, valid email, password length
     if (
@@ -34,12 +35,40 @@ const registerUser = asyncHandler(async (req, res) => {
     });
 
     if (existedUser) {
+        // **Crucial: Delete files from local storage if user exists**
+        if (req.files?.avatar && req.files.avatar[0].path) {
+            try {
+                fs.unlinkSync(req.files.avatar[0].path);
+                console.log(`Deleted avatar from: ${req.files.avatar[0].path}`); // Log for debugging
+            } catch (err) {
+                console.error(`Error deleting avatar: ${err}`); // Handle deletion errors
+            }
+        }
+        if (req.files?.coverImage && req.files.coverImage[0].path) {
+            try {
+                fs.unlinkSync(req.files.coverImage[0].path);
+                console.log(
+                    `Deleted cover image from: ${req.files.coverImage[0].path}`
+                );
+            } catch (err) {
+                console.error(`Error deleting cover image: ${err}`);
+            }
+        }
         throw new ApiError(409, "User with username or email already exist");
     }
 
     // check for images, check for avatar
     const avatarLocalPath = req.files?.avatar[0].path;
-    const coverImageLocalPath = req.files?.coverImage[0].path;
+    //const coverImageLocalPath = req.files?.coverImage[0].path;
+
+    let coverImageLocalPath;
+    if (
+        req.files &&
+        Array.isArray(req.files.coverImage) &&
+        req.files.coverImage.length > 0
+    ) {
+        coverImageLocalPath = req.files.coverImage[0].path;
+    }
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar is required to upload on LocalPath");
