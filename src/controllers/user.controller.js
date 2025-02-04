@@ -7,6 +7,7 @@ import fs from "fs";
 import jwt from "jsonwebtoken";
 import { subscribe } from "diagnostics_channel";
 import mongoose from "mongoose";
+import { error } from "console";
 
 // const generateAccessTokenAndRefreshToken = async (userId) => {
 //     try {
@@ -281,8 +282,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined,
+            $unset: {
+                refreshToken: 1, // this removes the field from the document
             },
         },
         {
@@ -302,7 +303,8 @@ const logoutUser = asyncHandler(async (req, res) => {
         .json(
             new ApiResponse(
                 200,
-                req.user.fullName,
+
+                req.user.fullName, //{},
                 "User logged Out Successfully"
             )
         );
@@ -442,9 +444,11 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Avatar file is required to be file uploaded");
     }
 
-    const avatar = uploadOnCloudinary(avatarLocalPath.url);
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    console.log("avatar: ", avatar);
 
     if (!avatar.url) {
+        console.error("Something went wrong while uploading avatar");
         throw new ApiError(400, "Something went wrong while uploading avatar");
     }
     const user = await User.findByIdAndUpdate(
@@ -509,9 +513,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             "Username is required to get userChannel profile"
         );
     }
-    const channel = User.aggregate([
+    const channel = await User.aggregate([
         {
-            $match: username?.toLowerCase(),
+            $match: { username: username?.toLowerCase() },
         },
         {
             $lookup: {
@@ -535,6 +539,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                 channelSubscribedToCount: { $size: "$subscribedTo" },
             },
             isSubscribed: {
+                // Improved isSubscribed logic
                 $cond: {
                     if: { $in: [req.user?._id, "$subscriber._id"] },
                     then: true,
@@ -552,6 +557,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                 channelSubscribedToCount: 1,
                 isSubscribed: 1,
                 createdAt: 1,
+                _id: 0,
             },
         },
     ]);
@@ -575,9 +581,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     const user = await User.aggregate([
         {
             $match: {
-                _id: new mongoose.Types.ObjectId.createFromHexString(
-                    req.user._id
-                ),
+                _id: req.user._id,
             },
         },
         {
