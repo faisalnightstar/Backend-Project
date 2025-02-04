@@ -36,7 +36,7 @@ const optimizeUrl = cloudinary.url("file", {
     quality: "auto",
 });
 
-console.log(optimizeUrl);
+//console.log(optimizeUrl);
 
 // Transform the image: auto-crop to square aspect_ratio
 const autoCropUrl = cloudinary.url("file", {
@@ -46,6 +46,6 @@ const autoCropUrl = cloudinary.url("file", {
     height: 500,
 });
 
-console.log(autoCropUrl);
+//console.log(autoCropUrl);
 
 export { uploadOnCloudinary, optimizeUrl, autoCropUrl };

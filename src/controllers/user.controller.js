@@ -250,22 +250,53 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 //Logout user
+// const logoutUser = asyncHandler(async (req, res) => {
+//     if (!req.user) {
+//         // Important: Check if req.user exists
+//         throw new ApiError(401, "Unauthorized request. User not found."); // Or handle differently
+//     }
+
+//     // remove refresh token from db
+//     await User.findById(
+//         req.user._id,
+//         { $set: { refreshToken: "" } },
+//         { new: true }
+//     );
+
+//     const options = {
+//         httpOnly: true,
+//         secure: true,
+//     };
+//     return res
+//         .status(200)
+//         .clearCookie("accessToken", options)
+//         .clearCookie("refreshToken", options)
+//         .json(new ApiResponse(200, {}, "User logged out successfully"));
+// });
+
 const logoutUser = asyncHandler(async (req, res) => {
-    await User.findById(
+    await User.findByIdAndUpdate(
         req.user._id,
-        { $set: { refreshToken: "" } },
-        { new: true }
+        {
+            $set: {
+                refreshToken: undefined,
+            },
+        },
+        {
+            new: true,
+        }
     );
 
     const options = {
         httpOnly: true,
         secure: true,
     };
+
     return res
         .status(200)
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
-        .json(new ApiResponse(200, {}, "User logged out successfully"));
+        .json(new ApiResponse(200, {}, "User logged Out Successfully"));
 });
 
-export { registerUser, loginUser };
+export { registerUser, loginUser, logoutUser };
